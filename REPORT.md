@@ -1,8 +1,8 @@
 # EduBfM Report
 
-Name:
+Name: Minki Cheon
 
-Student id:
+Student id: 20190421
 
 # Problem Analysis
 
