@@ -91,7 +91,15 @@ Four edubfm_Insert(
     if( (index < 0) || (index > BI_NBUFS(type)) )
         ERR( eBADBUFINDEX_BFM );
 
-   
+    hashValue = BFM_HASH(key,type);
+
+    //check whether collision is occurred
+    //and store into next hash entry
+    if(BI_HASHTABLEENTRY(type, hashValue) != -1)
+        BI_NEXTHASHENTRY(type,index) = BI_HASHTABLEENTRY(type,hashValue);
+    
+    //change hash table entry
+    BI_HASHTABLEENTRY(type, hashValue) = index;
 
     return( eNOERROR );
 
@@ -126,8 +134,27 @@ Four edubfm_Delete(
 
     CHECKKEY(key);    /*@ check validity of key */
 
+    if(!IS_NILBFMHASHKEY(*key)){
+        hashValue = BFM_HASH(key,type);
 
+        i = BI_HASHTABLEENTRY(type, hashValue);
+        prev = NIL;
 
+        while(1){
+            if(EQUALKEY(&BI_KEY(type,i), key)){
+                if(prev != NIL){
+                    BI_NEXTHASHENTRY(type,prev) = BI_NEXTHASHENTRY(type,i);
+                }
+                else
+                    BI_HASHTABLEENTRY(type, hashValue) = BI_NEXTHASHENTRY(type,i);
+                BI_NEXTHASHENTRY(type,i) = NIL;
+                break;
+            } else {
+                prev = i;
+                i = BI_NEXTHASHENTRY(type,i);
+            }
+        }
+    }
     ERR( eNOTFOUND_BFM );
 
 }  /* edubfm_Delete */
@@ -162,7 +189,22 @@ Four edubfm_LookUp(
     CHECKKEY(key);    /*@ check validity of key */
 
 
+    hashValue = BFM_HASH(key,type);
 
+    i = BI_HASHTABLEENTRY(type, hashValue);
+
+    while(1){
+        if(EQUALKEY(&BI_KEY(type,i), key)){
+            return i;
+        } else {
+            if(BI_NEXTHASHENTRY(type,i) != -1){
+                j = BI_NEXTHASHENTRY(type,i);
+                i = j;
+            } else {
+                break;
+            }
+        }
+    }
     return(NOTFOUND_IN_HTABLE);
     
 }  /* edubfm_LookUp */
@@ -189,8 +231,13 @@ Four edubfm_DeleteAll(void)
     Two 	i;
     Four        tableSize;
     
-
-
+    Four type;
+    for(type = 0; type < 1; type++){
+        tableSize = HASHTABLESIZE(type);
+        for(i = 0; i < tableSize; i++){
+            BI_HASHTABLEENTRY(type,i) = -1;
+        }
+    }
     return(eNOERROR);
 
 } /* edubfm_DeleteAll() */ 

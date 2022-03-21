@@ -59,7 +59,14 @@ Four EduBfM_DiscardAll(void)
     Two 	i;			/* index */
     Four 	type;			/* buffer type */
 
+    for(type = 0; type < 1; type++){
+        for(i = 0; i < BI_NBUFS(type); i++){
+            SET_NILBFMHASHKEY(BI_KEY(type, i));
+            BI_BITS(type, i) = ALL_0;
+        }
+    }
 
+    edubfm_DeleteAll();
 
     return(eNOERROR);
 

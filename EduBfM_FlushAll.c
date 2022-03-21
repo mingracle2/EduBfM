@@ -60,7 +60,12 @@ Four EduBfM_FlushAll(void)
     Two         i;                      /* index */
     Four        type;                   /* buffer type */
 
-    
+    for(type = 0; type < 1; type++){
+        for(i = 0; i < BI_NBUFS(type); i++){
+            e = edubfm_FlushTrain(&BI_KEY(type, i),type);
+            if(e < 0) ERR(e);
+        }
+    }
 
     return( eNOERROR );
     

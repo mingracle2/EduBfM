@@ -79,7 +79,23 @@ Four edubfm_AllocTrain(
 	/* Error check whether using not supported functionality by EduBfM */
 	if(sm_cfgParams.useBulkFlush) ERR(eNOTSUPPORTED_EDUBFM);
 
-
+    victim = BI_NEXTVICTIM(type);
+    while(1){
+        if(BI_FIXED(type, victim) == 0){
+            if(!(BI_BITS(type, victim) & REFER)){ 
+                if(BI_BITS(type, victim) & DIRTY)
+                    edubfm_FlushTrain(&BI_KEY(type, victim),type);
+                BI_BITS(type, victim) = REFER;
+                edubfm_Delete(&BI_KEY(type, victim),type);
+                BI_NEXTVICTIM(type) = (victim + 1) % BI_NBUFS(type);
+                return victim;
+            } else {
+                BI_BITS(type, victim) &= ~REFER;
+            }
+        }
+        victim = (victim + 1) % BI_NBUFS(type);
+    }
+    
     
     return( victim );
     
